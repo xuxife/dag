@@ -13,7 +13,6 @@ type Task interface {
 	Run(context.Context) error
 
 	Input(...Task)
-	UseInput(func([]Task))
 	Output() []any
 }
 

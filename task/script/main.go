@@ -62,7 +62,7 @@ func Func{{$in_out}}[{{$type_I_O}} any](f func(context.Context, {{$type_I}}) ({{
 		{{$t_out}} err = f(ctx, {{$t_in}})
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		{{ range $i, $v := Iterate .NumIn -}}
 		t.in{{$v}} = in[{{$i}}].(I{{$v}})
 		{{ end -}}

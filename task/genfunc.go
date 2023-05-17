@@ -14,7 +14,7 @@ func Func0_1[O1 any](f func(context.Context) (O1, error)) *func0_1[O1] {
 		t.out1, err = f(ctx)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 	})
 	return t
 }
@@ -43,7 +43,7 @@ func Func0_2[O1, O2 any](f func(context.Context) (O1, O2, error)) *func0_2[O1, O
 		t.out1, t.out2, err = f(ctx)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 	})
 	return t
 }
@@ -73,7 +73,7 @@ func Func0_3[O1, O2, O3 any](f func(context.Context) (O1, O2, O3, error)) *func0
 		t.out1, t.out2, t.out3, err = f(ctx)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 	})
 	return t
 }
@@ -104,7 +104,7 @@ func Func0_4[O1, O2, O3, O4 any](f func(context.Context) (O1, O2, O3, O4, error)
 		t.out1, t.out2, t.out3, t.out4, err = f(ctx)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 	})
 	return t
 }
@@ -136,7 +136,7 @@ func Func0_5[O1, O2, O3, O4, O5 any](f func(context.Context) (O1, O2, O3, O4, O5
 		t.out1, t.out2, t.out3, t.out4, t.out5, err = f(ctx)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 	})
 	return t
 }
@@ -164,7 +164,7 @@ func Func1_0[I1 any](f func(context.Context, I1) error) *func1_0[I1] {
 		err = f(ctx, t.in1)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 	})
 	return t
@@ -195,7 +195,7 @@ func Func1_1[I1, O1 any](f func(context.Context, I1) (O1, error)) *func1_1[I1, O
 		t.out1, err = f(ctx, t.in1)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 	})
 	return t
@@ -227,7 +227,7 @@ func Func1_2[I1, O1, O2 any](f func(context.Context, I1) (O1, O2, error)) *func1
 		t.out1, t.out2, err = f(ctx, t.in1)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 	})
 	return t
@@ -260,7 +260,7 @@ func Func1_3[I1, O1, O2, O3 any](f func(context.Context, I1) (O1, O2, O3, error)
 		t.out1, t.out2, t.out3, err = f(ctx, t.in1)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 	})
 	return t
@@ -294,7 +294,7 @@ func Func1_4[I1, O1, O2, O3, O4 any](f func(context.Context, I1) (O1, O2, O3, O4
 		t.out1, t.out2, t.out3, t.out4, err = f(ctx, t.in1)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 	})
 	return t
@@ -329,7 +329,7 @@ func Func1_5[I1, O1, O2, O3, O4, O5 any](f func(context.Context, I1) (O1, O2, O3
 		t.out1, t.out2, t.out3, t.out4, t.out5, err = f(ctx, t.in1)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 	})
 	return t
@@ -360,7 +360,7 @@ func Func2_0[I1, I2 any](f func(context.Context, I1, I2) error) *func2_0[I1, I2]
 		err = f(ctx, t.in1, t.in2)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 	})
@@ -393,7 +393,7 @@ func Func2_1[I1, I2, O1 any](f func(context.Context, I1, I2) (O1, error)) *func2
 		t.out1, err = f(ctx, t.in1, t.in2)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 	})
@@ -427,7 +427,7 @@ func Func2_2[I1, I2, O1, O2 any](f func(context.Context, I1, I2) (O1, O2, error)
 		t.out1, t.out2, err = f(ctx, t.in1, t.in2)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 	})
@@ -462,7 +462,7 @@ func Func2_3[I1, I2, O1, O2, O3 any](f func(context.Context, I1, I2) (O1, O2, O3
 		t.out1, t.out2, t.out3, err = f(ctx, t.in1, t.in2)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 	})
@@ -498,7 +498,7 @@ func Func2_4[I1, I2, O1, O2, O3, O4 any](f func(context.Context, I1, I2) (O1, O2
 		t.out1, t.out2, t.out3, t.out4, err = f(ctx, t.in1, t.in2)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 	})
@@ -535,7 +535,7 @@ func Func2_5[I1, I2, O1, O2, O3, O4, O5 any](f func(context.Context, I1, I2) (O1
 		t.out1, t.out2, t.out3, t.out4, t.out5, err = f(ctx, t.in1, t.in2)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 	})
@@ -568,7 +568,7 @@ func Func3_0[I1, I2, I3 any](f func(context.Context, I1, I2, I3) error) *func3_0
 		err = f(ctx, t.in1, t.in2, t.in3)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 		t.in3 = in[2].(I3)
@@ -603,7 +603,7 @@ func Func3_1[I1, I2, I3, O1 any](f func(context.Context, I1, I2, I3) (O1, error)
 		t.out1, err = f(ctx, t.in1, t.in2, t.in3)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 		t.in3 = in[2].(I3)
@@ -639,7 +639,7 @@ func Func3_2[I1, I2, I3, O1, O2 any](f func(context.Context, I1, I2, I3) (O1, O2
 		t.out1, t.out2, err = f(ctx, t.in1, t.in2, t.in3)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 		t.in3 = in[2].(I3)
@@ -676,7 +676,7 @@ func Func3_3[I1, I2, I3, O1, O2, O3 any](f func(context.Context, I1, I2, I3) (O1
 		t.out1, t.out2, t.out3, err = f(ctx, t.in1, t.in2, t.in3)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 		t.in3 = in[2].(I3)
@@ -714,7 +714,7 @@ func Func3_4[I1, I2, I3, O1, O2, O3, O4 any](f func(context.Context, I1, I2, I3)
 		t.out1, t.out2, t.out3, t.out4, err = f(ctx, t.in1, t.in2, t.in3)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 		t.in3 = in[2].(I3)
@@ -753,7 +753,7 @@ func Func3_5[I1, I2, I3, O1, O2, O3, O4, O5 any](f func(context.Context, I1, I2,
 		t.out1, t.out2, t.out3, t.out4, t.out5, err = f(ctx, t.in1, t.in2, t.in3)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 		t.in3 = in[2].(I3)
@@ -788,7 +788,7 @@ func Func4_0[I1, I2, I3, I4 any](f func(context.Context, I1, I2, I3, I4) error) 
 		err = f(ctx, t.in1, t.in2, t.in3, t.in4)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 		t.in3 = in[2].(I3)
@@ -825,7 +825,7 @@ func Func4_1[I1, I2, I3, I4, O1 any](f func(context.Context, I1, I2, I3, I4) (O1
 		t.out1, err = f(ctx, t.in1, t.in2, t.in3, t.in4)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 		t.in3 = in[2].(I3)
@@ -863,7 +863,7 @@ func Func4_2[I1, I2, I3, I4, O1, O2 any](f func(context.Context, I1, I2, I3, I4)
 		t.out1, t.out2, err = f(ctx, t.in1, t.in2, t.in3, t.in4)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 		t.in3 = in[2].(I3)
@@ -902,7 +902,7 @@ func Func4_3[I1, I2, I3, I4, O1, O2, O3 any](f func(context.Context, I1, I2, I3,
 		t.out1, t.out2, t.out3, err = f(ctx, t.in1, t.in2, t.in3, t.in4)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 		t.in3 = in[2].(I3)
@@ -942,7 +942,7 @@ func Func4_4[I1, I2, I3, I4, O1, O2, O3, O4 any](f func(context.Context, I1, I2,
 		t.out1, t.out2, t.out3, t.out4, err = f(ctx, t.in1, t.in2, t.in3, t.in4)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 		t.in3 = in[2].(I3)
@@ -983,7 +983,7 @@ func Func4_5[I1, I2, I3, I4, O1, O2, O3, O4, O5 any](f func(context.Context, I1,
 		t.out1, t.out2, t.out3, t.out4, t.out5, err = f(ctx, t.in1, t.in2, t.in3, t.in4)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 		t.in3 = in[2].(I3)
@@ -1020,7 +1020,7 @@ func Func5_0[I1, I2, I3, I4, I5 any](f func(context.Context, I1, I2, I3, I4, I5)
 		err = f(ctx, t.in1, t.in2, t.in3, t.in4, t.in5)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 		t.in3 = in[2].(I3)
@@ -1059,7 +1059,7 @@ func Func5_1[I1, I2, I3, I4, I5, O1 any](f func(context.Context, I1, I2, I3, I4,
 		t.out1, err = f(ctx, t.in1, t.in2, t.in3, t.in4, t.in5)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 		t.in3 = in[2].(I3)
@@ -1099,7 +1099,7 @@ func Func5_2[I1, I2, I3, I4, I5, O1, O2 any](f func(context.Context, I1, I2, I3,
 		t.out1, t.out2, err = f(ctx, t.in1, t.in2, t.in3, t.in4, t.in5)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 		t.in3 = in[2].(I3)
@@ -1140,7 +1140,7 @@ func Func5_3[I1, I2, I3, I4, I5, O1, O2, O3 any](f func(context.Context, I1, I2,
 		t.out1, t.out2, t.out3, err = f(ctx, t.in1, t.in2, t.in3, t.in4, t.in5)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 		t.in3 = in[2].(I3)
@@ -1182,7 +1182,7 @@ func Func5_4[I1, I2, I3, I4, I5, O1, O2, O3, O4 any](f func(context.Context, I1,
 		t.out1, t.out2, t.out3, t.out4, err = f(ctx, t.in1, t.in2, t.in3, t.in4, t.in5)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 		t.in3 = in[2].(I3)
@@ -1225,7 +1225,7 @@ func Func5_5[I1, I2, I3, I4, I5, O1, O2, O3, O4, O5 any](f func(context.Context,
 		t.out1, t.out2, t.out3, t.out4, t.out5, err = f(ctx, t.in1, t.in2, t.in3, t.in4, t.in5)
 		return err
 	})
-	t.inputFunc = baseInputFunc(func(in ...any) {
+	t.InputFunc = BaseInputFunc(func(in ...any) {
 		t.in1 = in[0].(I1)
 		t.in2 = in[1].(I2)
 		t.in3 = in[2].(I3)

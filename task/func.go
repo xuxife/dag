@@ -20,7 +20,7 @@ func Func(f func(context.Context) error) *BaseTask {
 type BaseTask struct {
 	dag.BaseVertex
 	F         func(context.Context) error
-	inputFunc func([]Task)
+	InputFunc func([]Task)
 }
 
 func (t *BaseTask) Run(ctx context.Context) error {
@@ -28,13 +28,13 @@ func (t *BaseTask) Run(ctx context.Context) error {
 }
 
 func (t *BaseTask) Input(ts ...Task) {
-	if t.inputFunc != nil {
-		t.inputFunc(ts)
+	if t.InputFunc != nil {
+		t.InputFunc(ts)
 	}
 }
 
 func (t *BaseTask) UseInput(f func([]Task)) {
-	t.inputFunc = f
+	t.InputFunc = f
 }
 
 func (t *BaseTask) Output() []any {
@@ -43,7 +43,7 @@ func (t *BaseTask) Output() []any {
 
 //go:generate sh -c "go run ./script/main.go -num_in 5 -num_out 5 | gofmt > genfunc.go"
 
-func baseInputFunc(f func(...any)) func([]Task) {
+func BaseInputFunc(f func(...any)) func([]Task) {
 	return func(ts []Task) {
 		switch len(ts) {
 		case 0:
