@@ -55,9 +55,9 @@ type func{{$in_out}}[{{$type_I_O}} any] struct {
 	{{- end }}
 }
 
-func Func{{$in_out}}[{{$type_I_O}} any](f func(context.Context, {{$type_I}}) ({{$type_O}} error)) *func{{$in_out}}[{{$type_I_O}}] {
+func Func{{$in_out}}[{{$type_I_O}} any](name string, f func(context.Context, {{$type_I}}) ({{$type_O}} error)) *func{{$in_out}}[{{$type_I_O}}] {
 	t := &func{{$in_out}}[{{$type_I_O}}]{}
-	t.BaseTask = *Func(func(ctx context.Context) error {
+	t.BaseTask = *Func(name, func(ctx context.Context) error {
 		var err error
 		{{$t_out}} err = f(ctx, {{$t_in}})
 		return err

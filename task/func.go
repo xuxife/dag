@@ -6,13 +6,13 @@ import (
 	"github.com/xuxife/dag"
 )
 
-func VoidTask() *BaseTask {
-	return Func(func(_ context.Context) error { return nil })
+func VoidTask(name string) *BaseTask {
+	return Func(name, func(_ context.Context) error { return nil })
 }
 
-func Func(f func(context.Context) error) *BaseTask {
+func Func(name string, f func(context.Context) error) *BaseTask {
 	return &BaseTask{
-		BaseVertex: *dag.NewVertex(),
+		BaseVertex: *dag.NewVertex(name),
 		F:          f,
 	}
 }

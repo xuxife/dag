@@ -91,11 +91,11 @@ func (d *DAG) DeleteVertex(vs ...Vertex) {
 }
 
 func (d *DAG) Rank(r int) ([]Vertex, error) {
-	if len(d.rank) == 0 {
+	if len(d.rank) < d.vertices.Len() {
 		d.rank = make([][]Vertex, d.vertices.Len())
 	}
-	if r < 0 || r >= len(d.rank) {
-		return nil, fmt.Errorf("rank %d out of range", r)
+	if r < 0 || r >= d.vertices.Len() {
+		return nil, nil
 	}
 	if d.IsSorted() {
 		return d.rank[r], nil
@@ -108,9 +108,10 @@ func (d *DAG) Rank(r int) ([]Vertex, error) {
 		return d.rank[0], nil
 	}
 	dn := d.Duplicate()
-	dn.rank = dn.rank[1:]
-	dn.DeleteVertex(dn.getRank0Vertices()...)
-	if _, err := dn.Rank(r - 1); err != nil {
+	dn.rank = d.rank[1:]
+	dn.DeleteVertex(d.rank[0]...)
+	var err error
+	if d.rank[1], err = dn.Rank(r - 1); err != nil {
 		return nil, err
 	}
 	return d.rank[r], nil

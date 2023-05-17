@@ -2,8 +2,6 @@ package dag
 
 import (
 	"fmt"
-
-	"github.com/google/uuid"
 )
 
 type Vertex interface {
@@ -12,17 +10,15 @@ type Vertex interface {
 }
 
 type BaseVertex struct {
-	ID uuid.UUID
+	Name string
 }
 
-func NewVertex() *BaseVertex {
-	return &BaseVertex{
-		ID: uuid.New(),
-	}
+func NewVertex(name string) *BaseVertex {
+	return &BaseVertex{name}
 }
 
 func (b *BaseVertex) comparable() {}
 
 func (b *BaseVertex) String() string {
-	return fmt.Sprintf("<ID: %s>", b.ID)
+	return fmt.Sprintf("<%s>", b.Name)
 }

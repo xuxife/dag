@@ -1,9 +1,9 @@
 package task
 
-func Input(vs ...any) *input {
+func Input(name string, vs ...any) *input {
 	i := &input{}
 	i.values = vs
-	i.BaseTask = *VoidTask()
+	i.BaseTask = *VoidTask(name)
 	return i
 }
 
