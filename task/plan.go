@@ -74,6 +74,7 @@ type Plan struct {
 	started atomic.Int32
 	cancel  func()
 	status  sync.Map
+	input   sync.Map
 }
 
 // Add the given tasks to current Plan,
@@ -139,25 +140,10 @@ func (p *Plan) DependsOn(ts ...Task) *Plan {
 
 // Check whether the Plan DAG having circle or other issues.
 func (p *Plan) Check() error {
-	var err error
-	if _, err = p.d.Sort(); err != nil {
+	if _, err := p.d.Sort(); err != nil {
 		return err
 	}
-	for _, e := range p.d.GetEdges() {
-		func() {
-			defer func() {
-				if r := recover(); r != nil {
-					err = multierr.Append(err, &TaskInOutMismatchError{
-						OutputTask: e.From().(Task),
-						InputTask:  e.To().(Task),
-						Err:        r,
-					})
-				}
-			}()
-			e.To().(Task).Input(e.From().(Task).Output()...)
-		}()
-	}
-	return err
+	return nil
 }
 
 type TaskInOutMismatchError struct {
@@ -206,8 +192,20 @@ func (p *Plan) Cancel() {
 	}
 }
 
+type PlanRun <-chan TaskResult
+
+func (p PlanRun) Wait() error {
+	var err error
+	for r := range p {
+		if r.Err != nil {
+			err = multierr.Append(err, r)
+		}
+	}
+	return err
+}
+
 // Start kicks off the Plan, tasks are running in topological order.
-func (p *Plan) Start(ctx context.Context) (<-chan TaskResult, error) {
+func (p *Plan) Start(ctx context.Context) (PlanRun, error) {
 	p.mustNotStarted()
 
 	if _, err := p.d.Sort(); err != nil {
@@ -247,10 +245,7 @@ func (p *Plan) Start(ctx context.Context) (<-chan TaskResult, error) {
 				}
 				break
 			} else {
-				output := result.Task.Output()
-				for _, e := range d.GetEdgesFrom(result.Task) {
-					e.To().(Task).Input(output...)
-				}
+				p.enqueueFinishedTask(d, result.Task)
 				d.DeleteVertex(result.Task)
 			}
 		}
@@ -259,11 +254,23 @@ func (p *Plan) Start(ctx context.Context) (<-chan TaskResult, error) {
 	return resultChan, nil
 }
 
+func (p *Plan) enqueueFinishedTask(d *dag.DAG, t Task) {
+	for _, e := range d.GetEdgesFrom(t) {
+		tt := e.To().(Task)
+		actual, _ := p.input.LoadOrStore(tt, []Task{})
+		ts := actual.([]Task)
+		ts = append(ts, t)
+		p.input.Store(tt, ts)
+	}
+}
+
 func (p *Plan) startTask(ctx context.Context, t Task, resultChan chan<- TaskResult) {
 	if p.Status(t) != StatusPending {
 		return
 	}
 	p.started.Add(1)
+	v, _ := p.input.LoadOrStore(t, []Task{})
+	t.Input(v.([]Task)...)
 	go func(ctx context.Context, task Task) {
 		defer p.started.Add(-1)
 		if err := task.Run(ctx); err != nil {

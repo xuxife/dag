@@ -57,18 +57,17 @@ type func{{$in_out}}[{{$type_I_O}} any] struct {
 
 func Func{{$in_out}}[{{$type_I_O}} any](f func(context.Context, {{$type_I}}) ({{$type_O}} error)) *func{{$in_out}}[{{$type_I_O}}] {
 	t := &func{{$in_out}}[{{$type_I_O}}]{}
-	t.BaseTask = *newFunc(func(ctx context.Context) error {
+	t.BaseTask = *Func(func(ctx context.Context) error {
 		var err error
 		{{$t_out}} err = f(ctx, {{$t_in}})
 		return err
 	})
+	t.inputFunc = baseInputFunc(func(in ...any) {
+		{{ range $i, $v := Iterate .NumIn -}}
+		t.in{{$v}} = in[{{$i}}].(I{{$v}})
+		{{ end -}}
+	})
 	return t
-}
-
-func (t *func{{$in_out}}[{{$type_I_O}}]) Input(in ...any) {
-	{{ range $i := Iterate .NumIn -}}
-	t.in{{$i}} = in[{{$i}}].(I{{$i}})
-	{{ end -}}
 }
 
 func (t *func{{$in_out}}[{{$type_I_O}}]) Output() []any {

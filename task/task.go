@@ -12,23 +12,9 @@ type Task interface {
 
 	Run(context.Context) error
 
-	Input(...any)
+	Input(...Task)
+	UseInput(func([]Task))
 	Output() []any
-}
-
-type BaseTask struct {
-	dag.BaseVertex
-	F func(context.Context) error
-}
-
-func (t *BaseTask) Run(ctx context.Context) error {
-	return t.F(ctx)
-}
-
-func (t *BaseTask) Input(...any) {}
-
-func (t *BaseTask) Output() []any {
-	return nil
 }
 
 type TaskStatus int
@@ -72,4 +58,8 @@ func (r TaskResult) String() string {
 		return fmt.Sprintf("<Task: %s, Status: %s, Err: %v>", r.Task, r.Status, r.Err)
 	}
 	return fmt.Sprintf("<Task: %s, Status: %s>", r.Task, r.Status)
+}
+
+func (r TaskResult) Error() string {
+	return r.String()
 }
