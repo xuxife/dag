@@ -164,10 +164,7 @@ func (p *Plan) Start(ctx context.Context) error {
 
 	// start tasks without dependencies
 	startTasksNoDep := func() bool {
-		batch, err := d.Rank(0)
-		if err != nil {
-			panic(err) // should never happen since we already checked
-		}
+		batch := d.GetVerticesNoIn()
 		if len(batch) < 1 {
 			return true // exit condition, no more tasks
 		}

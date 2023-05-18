@@ -26,7 +26,7 @@ func (d *DAG) Rank(r int) ([]Vertex, error) {
 	if d.IsSorted() {
 		return d.rank[r], nil
 	}
-	d.rank[0] = d.getVerticesNoIn()
+	d.rank[0] = d.GetVerticesNoIn()
 	if len(d.rank[0]) == 0 && vertexLen > 0 { // still have vertices, but all have incoming edges
 		return nil, fmt.Errorf("cycle detected")
 	}
@@ -43,8 +43,8 @@ func (d *DAG) Rank(r int) ([]Vertex, error) {
 	return d.rank[r], nil
 }
 
-// getVerticesNoIn returns vertices without incoming edges.
-func (d *DAG) getVerticesNoIn() []Vertex {
+// GetVerticesNoIn returns vertices without incoming edges.
+func (d *DAG) GetVerticesNoIn() []Vertex {
 	v := d.vertices.Clone()
 	for _, e := range d.edges.ToSlice() {
 		v.RemoveAll(e.To())
