@@ -79,7 +79,7 @@ type Plan struct {
 	cancel     func()
 	cancelOnce sync.Once
 
-	oneTaskSucceeded chan Task // signal for proceeding main loop
+	taskSucceeded chan Task // signal for proceeding main loop
 }
 
 // Add the given tasks to current Plan,
@@ -155,7 +155,7 @@ func (p *Plan) Start(ctx context.Context) error {
 	p.cancelOnce = sync.Once{}
 	ctx, p.cancel = context.WithCancel(ctx)
 	p.taskDone, p.status, p.input = sync.Map{}, sync.Map{}, sync.Map{}
-	p.oneTaskSucceeded = make(chan Task, len(d.GetVertices()))
+	p.taskSucceeded = make(chan Task, len(d.GetVertices()))
 
 	for _, t := range d.GetVertices() {
 		tt := t.(Task)
@@ -185,7 +185,7 @@ func (p *Plan) Start(ctx context.Context) error {
 			select {
 			case <-ctx.Done():
 				return
-			case task := <-p.oneTaskSucceeded:
+			case task := <-p.taskSucceeded:
 				// remove the succeeded task from the DAG
 				d.DeleteVertex(task)
 				if startTasksNoDep() {
@@ -222,7 +222,7 @@ func (p *Plan) startTask(ctx context.Context, d *dag.DAG, t Task) {
 			p.status.Store(task, result)
 			if result.Err == nil {
 				p.finishTask(d, task)
-				p.oneTaskSucceeded <- task
+				p.taskSucceeded <- task
 			} else {
 				p.Cancel()
 			}
