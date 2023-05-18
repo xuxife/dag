@@ -185,6 +185,34 @@ func TestExample(t *testing.T) {
 	p = task.Pipelines(foo, upper)
 	require.NoError(t, p.Run(ctx))
 	require.Equal(t, "HELLO", upper.TOutput())
+
+	// ## Input and Output
+	//
+	// Plan connects tasks, and pass output from pre-order tasks to post-order tasks.
+	bar := task.Input("bar", "world")
+	p, err = task.New(
+		task.Pipelines(foo, upper, concate),
+		task.Add(bar).Then(concate),
+	)
+	// foo (Input: "hello") ---> upper ---> concate
+	// bar (Input: "world") -------------------^
+	// notice concate accepts two inputs
+	// we need to customize concate.InputFunc to clarify the behavior
+	concate.InputFunc = func(ts []task.Task) {
+		var upperOut, barOut string
+		for _, t := range ts {
+			switch {
+			case t == upper:
+				upperOut = upper.TOutput()
+			case t == bar:
+				barOut = bar.Output()[0].(string)
+			}
+		}
+		concate.TInput(upperOut, barOut)
+	}
+	require.NoError(t, err)
+	require.NoError(t, p.Run(ctx))
+	require.Equal(t, "HELLO world", concate.TOutput())
 }
 
 func TestPlan(t *testing.T) {
