@@ -12,7 +12,7 @@ type Task interface {
 
 	Run(context.Context) error
 
-	Input(...Task)
+	Input(...Task) // Input accepts tasks, that current task depends on
 	Output() []any
 }
 
@@ -54,9 +54,9 @@ type TaskResult struct {
 
 func (r TaskResult) String() string {
 	if r.Err != nil {
-		return fmt.Sprintf("<Task: %s, Status: %s, Err: %v>", r.Task, r.Status, r.Err)
+		return fmt.Sprintf("[Task: %s, Status: %s, Err: %v]", r.Task, r.Status, r.Err)
 	}
-	return fmt.Sprintf("<Task: %s, Status: %s>", r.Task, r.Status)
+	return fmt.Sprintf("[Task: %s, Status: %s]", r.Task, r.Status)
 }
 
 func (r TaskResult) Error() string {

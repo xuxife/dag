@@ -13,23 +13,22 @@ import (
 //
 // Example:
 //
-//		a := task.Func(func(ctx context.Context) error {
-//			// task A
-//			return nil
-//		})
-//		b := task.Func(func(ctx context.Context) error {
-//			// task B
-//			return nil
-//		})
-//		p, err := task.New(
-//		   	task.Add(a).Then(b),
-//		)
-//		// handle err
-//		taskChan, err := p.Start(context.Background())
-//		// handle err
-//	 	for taskResult := range taskChan {
-//	 		// handle taskResult
-//	 	}
+//	a := task.Func(func(ctx context.Context) error {
+//		// task A
+//		return nil
+//	})
+//	b := task.Func(func(ctx context.Context) error {
+//		// task B
+//		return nil
+//	})
+//	plan, err := task.New(
+//	   	task.Add(a).Then(b),
+//	)
+//	// handle err
+//	err = plan.Start(context.Background())
+//	// handle err
+//	err = plan.Wait()
+//	// handle err
 func New(ps ...*Plan) (*Plan, error) {
 	p := newPlan()
 	dags := []*dag.DAG{}
@@ -70,14 +69,17 @@ type Plan struct {
 	dag.DAG
 	attention []Task
 
-	started     atomic.Int32 // the number of running tasks
-	cancel      func()
-	cancelOnce  sync.Once
-	status      sync.Map // map[Task]TaskStatus
-	input       sync.Map // map[Task][]Task
-	result      sync.Map // map[Task]TaskResult
-	oneTaskDone chan struct{}
-	finished    chan struct{}
+	runningTask atomic.Int32 // the number of running tasks
+
+	mainDone chan struct{} // whether main loop is finished
+	taskDone sync.Map      // map[Task]chan struct{}	signal for task finished
+	status   sync.Map      // map[Task]TaskResult		result/status of task
+	input    sync.Map      // map[Task]*SafeItems[Task]	input for task from dependencies
+
+	cancel     func()
+	cancelOnce sync.Once
+
+	oneTaskSucceeded chan Task // signal for proceeding main loop
 }
 
 // Add the given tasks to current Plan,
@@ -92,15 +94,6 @@ func (p *Plan) Add(ts ...Task) *Plan {
 	p.DAG.AddVertex(t2v(ts)...)
 	p.attention = ts
 	return p
-}
-
-// task to vertex
-func t2v(ts []Task) []dag.Vertex {
-	vs := []dag.Vertex{}
-	for _, t := range ts {
-		vs = append(vs, t)
-	}
-	return vs
 }
 
 // Then adds follow-up tasks to current Plan,
@@ -153,28 +146,30 @@ func (p *Plan) Check() error {
 func (p *Plan) Start(ctx context.Context) error {
 	p.mustNotStarted()
 
-	d := p.DAG.Duplicate()
+	d := p.DAG.Clone()
 	if _, err := d.Sort(); err != nil {
 		return err
 	}
 
-	for _, t := range d.GetVertices() {
-		p.setStatus(t.(Task), StatusPending)
-	}
-
-	p.oneTaskDone = make(chan struct{}, len(d.GetVertices()))
-	p.finished = make(chan struct{})
-
+	p.mainDone = make(chan struct{})
 	p.cancelOnce = sync.Once{}
 	ctx, p.cancel = context.WithCancel(ctx)
+	p.taskDone, p.status, p.input = sync.Map{}, sync.Map{}, sync.Map{}
+	p.oneTaskSucceeded = make(chan Task, len(d.GetVertices()))
 
-	startTaskRank0 := func() bool {
+	for _, t := range d.GetVertices() {
+		tt := t.(Task)
+		p.status.Store(tt, TaskResult{Task: tt, Status: StatusPending})
+	}
+
+	// start tasks without dependencies
+	startTasksNoDep := func() bool {
 		batch, err := d.Rank(0)
 		if err != nil {
-			panic(err) // should never happen
+			panic(err) // should never happen since we already checked
 		}
 		if len(batch) < 1 {
-			return true // exit condition
+			return true // exit condition, no more tasks
 		}
 		for _, t := range batch {
 			p.startTask(ctx, d, t.(Task))
@@ -182,17 +177,18 @@ func (p *Plan) Start(ctx context.Context) error {
 		return false
 	}
 
-	startTaskRank0()
+	startTasksNoDep()
 	go func() {
-		defer close(p.finished)
+		defer close(p.mainDone)
 		defer p.Cancel()
 		for {
 			select {
 			case <-ctx.Done():
 				return
-			case <-p.oneTaskDone:
-				noMoreTasks := startTaskRank0()
-				if noMoreTasks {
+			case task := <-p.oneTaskSucceeded:
+				// remove the succeeded task from the DAG
+				d.DeleteVertex(task)
+				if startTasksNoDep() {
 					return
 				}
 			}
@@ -202,53 +198,75 @@ func (p *Plan) Start(ctx context.Context) error {
 	return nil
 }
 
-func (p *Plan) finishTask(d *dag.DAG, t Task) {
-	for _, e := range d.GetEdgesFrom(t) {
+func (p *Plan) finishTask(d *dag.DAG, from Task) {
+	for _, t := range d.GetVerticesFrom(from) {
 		// enqueue the output from current task to
 		// tasks depending on current task
-		tt := e.To().(Task)
-		actual, _ := p.input.LoadOrStore(tt, []Task{})
-		ts := actual.([]Task)
-		ts = append(ts, t)
-		p.input.Store(tt, ts)
+		to := t.(Task)
+		toInput, _ := p.input.LoadOrStore(to, NewSafeItem[Task]())
+		toInput.(*SafeItems[Task]).Append(from)
 	}
-	d.DeleteVertex(t)
 }
 
 func (p *Plan) startTask(ctx context.Context, d *dag.DAG, t Task) {
-	if p.Status(t) != StatusPending {
+	if _, isStarted := p.taskDone.Load(t); isStarted {
 		return
 	}
-	p.started.Add(1)
+	p.runningTask.Add(1)
+	p.taskDone.Store(t, make(chan struct{}))
 	go func(ctx context.Context, task Task) {
 		var result TaskResult
 		defer func() {
-			p.started.Add(-1)
-			p.result.Store(task, result)
+			p.runningTask.Add(-1)
+			p.status.Store(task, result)
 			if result.Err == nil {
 				p.finishTask(d, task)
-				p.oneTaskDone <- struct{}{}
+				p.oneTaskSucceeded <- task
 			} else {
 				p.Cancel()
 			}
+			// send singal to inform task finished
+			v, _ := p.taskDone.Load(task)
+			close(v.(chan struct{}))
 		}()
-		// load input for the task from finished previous tasks
-		v, _ := p.input.LoadOrStore(t, []Task{})
-		t.Input(v.([]Task)...)
-		p.input.Delete(t)
+		p.loadInput(task)
 		// kick off the task
 		if err := task.Run(ctx); err != nil {
-			p.setStatus(task, StatusFailed)
 			result = TaskResult{Task: task, Err: err, Status: StatusFailed}
 			return
 		}
-		p.setStatus(task, StatusSuccess)
 		result = TaskResult{Task: task, Err: nil, Status: StatusSuccess}
 	}(ctx, t)
 }
 
+// load input for the task from finished previous tasks
+func (p *Plan) loadInput(t Task) {
+	// dependency tasks must exit
+	for _, from := range p.DAG.GetVerticesTo(t) {
+		dep := from.(Task)
+		depFinished, _ := p.taskDone.Load(dep)
+		<-depFinished.(chan struct{})
+	}
+	tInput, ok := p.input.LoadAndDelete(t)
+	if !ok {
+		return
+	}
+	t.Input(tInput.(*SafeItems[Task]).Get()...)
+}
+
 func (p *Plan) IsRunning() bool {
-	return p.started.Load() != 0
+	if p.runningTask.Load() != 0 {
+		return true
+	}
+	if p.mainDone == nil {
+		return false
+	}
+	select {
+	case <-p.mainDone: // closed
+		return true
+	default:
+		return false
+	}
 }
 
 func (p *Plan) mustNotStarted() {
@@ -257,17 +275,9 @@ func (p *Plan) mustNotStarted() {
 	}
 }
 
-func (p *Plan) setStatus(t Task, s TaskStatus) {
-	p.status.Store(t, s)
-}
-
 // Status gets the status of the given task.
 func (p *Plan) Status(t Task) TaskStatus {
-	s, ok := p.status.Load(t)
-	if !ok {
-		return StatusUnknown
-	}
-	return s.(TaskStatus)
+	return p.Result(t).Status
 }
 
 // Statuses gets the statuses of all tasks.
@@ -292,9 +302,13 @@ func (p *Plan) Cancel() {
 
 func (p *Plan) Wait() error {
 	var err error
-	<-p.finished
-	p.result.Range(func(key, value any) bool {
-		if r := value.(TaskResult); r.Err != nil {
+	<-p.mainDone
+	p.taskDone.Range(func(task, done any) bool {
+		<-done.(chan struct{})
+		return true
+	})
+	p.status.Range(func(stask, result any) bool {
+		if r := result.(TaskResult); r.Status != StatusSuccess {
 			err = multierr.Append(err, r)
 		}
 		return true
@@ -303,7 +317,7 @@ func (p *Plan) Wait() error {
 }
 
 func (p *Plan) Result(t Task) TaskResult {
-	v, ok := p.result.Load(t)
+	v, ok := p.status.Load(t)
 	if !ok {
 		return TaskResult{
 			Task:   t,
@@ -311,4 +325,13 @@ func (p *Plan) Result(t Task) TaskResult {
 		}
 	}
 	return v.(TaskResult)
+}
+
+// task to vertex
+func t2v(ts []Task) []dag.Vertex {
+	vs := []dag.Vertex{}
+	for _, t := range ts {
+		vs = append(vs, t)
+	}
+	return vs
 }

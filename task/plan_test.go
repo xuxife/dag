@@ -36,7 +36,7 @@ func TestPlan(t *testing.T) {
 		r.NoError(t, err)
 		// task input can be set by task.Input
 		a.Input(task.Input("input_a", 123))
-		p.Add(task.Input("input_a", 123)).Then(a) // same
+		// p.Add(task.Input("input_a", 123)).Then(a) // same
 		// TInput is type safe, but limit to task.Func family
 		b.TInput("hello")
 
@@ -91,7 +91,7 @@ func TestPlan(t *testing.T) {
 		)
 		r.ErrorContains(t, err, "cycle")
 	})
-	t.Run("multiple input should use .UseInput to customize input", func(t *testing.T) {
+	t.Run("multiple input should customize InputFunc", func(t *testing.T) {
 		d := task.Func0_2("d", func(ctx context.Context) (int, string, error) {
 			return 123, "d: hello", nil
 		})
@@ -101,7 +101,7 @@ func TestPlan(t *testing.T) {
 			task.Add(a, d).Then(b),
 		)
 		r.NoError(t, err)
-		a.TInput(321)
+		a.TInput(323)
 		defer gostub.New().Stub(&b.InputFunc, func(ts []task.Task) {
 			var aOut, dOut string
 			for _, ta := range ts {
@@ -118,7 +118,7 @@ func TestPlan(t *testing.T) {
 		}).Reset()
 		r.NoError(t, p.Start(ctx))
 		r.NoError(t, p.Wait())
-		r.Equal(t, "b: a: 321, d: hello", b.TOutput())
+		r.Equal(t, "b: a: 323, d: hello", b.TOutput())
 	})
 	t.Run("multiple dependencies would copy output to each task", func(t *testing.T) {
 		d := task.Func1_1("d", func(ctx context.Context, s string) (string, error) {

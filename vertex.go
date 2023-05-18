@@ -6,7 +6,7 @@ import (
 
 type Vertex interface {
 	fmt.Stringer
-	comparable()
+	// TODO
 }
 
 type BaseVertex struct {
@@ -16,8 +16,6 @@ type BaseVertex struct {
 func NewVertex(name string) *BaseVertex {
 	return &BaseVertex{name}
 }
-
-func (b *BaseVertex) comparable() {}
 
 func (b *BaseVertex) String() string {
 	return fmt.Sprintf("<%s>", b.Name)

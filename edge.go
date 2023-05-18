@@ -22,6 +22,7 @@ func (e *BaseEdge) To() Vertex {
 
 var Add = From
 
+// From creates edges starting from the given vertices.
 func From(vs ...Vertex) Edges {
 	rv := Edges{}
 	for _, v := range vs {
@@ -30,6 +31,7 @@ func From(vs ...Vertex) Edges {
 	return rv
 }
 
+// To links vertices to the given vertices.
 func (es Edges) To(to ...Vertex) Edges {
 	edges := make([]Edge, 0, len(es)*len(to))
 	for _, e := range es {
