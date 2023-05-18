@@ -86,9 +86,9 @@ type Plan struct {
 // tasks are independent.
 // Add ignores previous tasks.
 //
-//	 /-> A
-//	-|-> B
-//	 \-> C
+//	-> A
+//	-> B
+//	-> C
 func (p *Plan) Add(ts ...Task) *Plan {
 	p.mustNotStarted()
 	p.DAG.AddVertex(t2v(ts)...)
