@@ -9,8 +9,12 @@ import (
 
 // # DAG for Kubernetes Operator
 //
-// Now let's assume we are going to build a Kubernetes Operator,
+// Let's assume we are going to build a Kubernetes Operator,
 // which watches a CRD `Plan`, and reconcile the jobs defined in Plan in topological order.
+//
+// ## CRD
+//
+// First, let's define the CRD `Plan`:
 type Plan struct {
 	// metav1.TypeMeta   `json:",inline"`
 	// metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -36,8 +40,6 @@ type TaskSpec struct {
 	JobSpec JobSpec `json:"job,omitempty"`
 }
 
-type JobSpec struct{} // mock for batchv1.JobSpec
-
 type PlanStatus struct {
 	TaskStatuses []TaskStatus `json:"tasks,omitempty"`
 }
@@ -59,7 +61,9 @@ const (
 )
 
 // ## Reconciler
+//
 // Now let's buld a reconciler for Plan.
+// The reconciler will build a DAG from the Plan, and start the tasks in topological order.
 type PlanReconciler struct {
 	Client K8sClient
 }
@@ -72,10 +76,12 @@ type task struct {
 	Status TaskStatusType
 }
 
+// Reconcile Loop
 func (r *PlanReconciler) Reconcile(ctx context.Context, req Request) (Result, error) {
 	var plan Plan
 	_ = r.Client.Get(ctx, req.NamespacedName, &plan)
 
+	// build task from Plan
 	tasks := map[string]*task{}
 	for _, spec := range plan.Spec.TaskSpecs {
 		tasks[spec.Name] = &task{
@@ -87,7 +93,7 @@ func (r *PlanReconciler) Reconcile(ctx context.Context, req Request) (Result, er
 		tasks[status.Name].Status = status.Status
 	}
 
-	// update status with latest job status
+	// update status from latest job status
 	// r.Client.List(ctx, &JobList{})
 
 	// build DAG
@@ -98,6 +104,7 @@ func (r *PlanReconciler) Reconcile(ctx context.Context, req Request) (Result, er
 			d.AddEdge(dag.From(tasks[dep]).To(t)...)
 		}
 	}
+	// sort DAG to check cycle
 	_, err := d.Sort()
 	if err != nil {
 		return Result{}, fmt.Errorf("Task dependency cycle detected: %w", err)
@@ -122,7 +129,12 @@ func (r *PlanReconciler) Reconcile(ctx context.Context, req Request) (Result, er
 		}
 		// start task
 		_ = r.Client.Create(ctx, t.JobSpec)
+		t.Status = TaskStatusTypeRunning
 	}
+
+	// update Plan status
+	// plan.Status.TaskStatuses = []TaskStatus{}
+	// r.Client.Update(ctx, plan)
 
 	return Result{}, nil
 }

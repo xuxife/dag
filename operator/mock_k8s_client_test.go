@@ -28,3 +28,5 @@ type Result struct {
 	Requeue      bool
 	RequeueAfter time.Duration
 }
+
+type JobSpec struct{} // mock for batchv1.JobSpec
