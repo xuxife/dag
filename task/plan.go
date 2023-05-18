@@ -301,6 +301,7 @@ func (p *Plan) Cancel() {
 	})
 }
 
+// Wait waits for all tasks to finish.
 func (p *Plan) Wait() error {
 	var err error
 	<-p.mainDone
@@ -317,6 +318,7 @@ func (p *Plan) Wait() error {
 	return err
 }
 
+// Result gets the result of the given task.
 func (p *Plan) Result(t Task) TaskResult {
 	v, ok := p.status.Load(t)
 	if !ok {
@@ -328,6 +330,7 @@ func (p *Plan) Result(t Task) TaskResult {
 	return v.(TaskResult)
 }
 
+// Results gets the results of all tasks.
 func (p *Plan) Results() map[Task]TaskResult {
 	results := map[Task]TaskResult{}
 	p.status.Range(func(task, result any) bool {
@@ -335,6 +338,14 @@ func (p *Plan) Results() map[Task]TaskResult {
 		return true
 	})
 	return results
+}
+
+// Run starts all tasks and wait for them to finish.
+func (p *Plan) Run(ctx context.Context) error {
+	if err := p.Start(ctx); err != nil {
+		return err
+	}
+	return p.Wait()
 }
 
 // task to vertex
