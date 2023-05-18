@@ -209,11 +209,12 @@ func (p *Plan) finishTask(d *dag.DAG, from Task) {
 }
 
 func (p *Plan) startTask(ctx context.Context, d *dag.DAG, t Task) {
-	if _, isStarted := p.taskDone.Load(t); isStarted {
+	if p.Status(t) != StatusPending {
 		return
 	}
 	p.runningTask.Add(1)
 	p.taskDone.Store(t, make(chan struct{}))
+	p.status.Store(t, TaskResult{Task: t, Status: StatusRunning})
 	go func(ctx context.Context, task Task) {
 		var result TaskResult
 		defer func() {
@@ -226,8 +227,8 @@ func (p *Plan) startTask(ctx context.Context, d *dag.DAG, t Task) {
 				p.Cancel()
 			}
 			// send singal to inform task finished
-			v, _ := p.taskDone.Load(task)
-			close(v.(chan struct{}))
+			taskDone, _ := p.taskDone.Load(task)
+			close(taskDone.(chan struct{}))
 		}()
 		p.loadInput(task)
 		// kick off the task
@@ -325,6 +326,15 @@ func (p *Plan) Result(t Task) TaskResult {
 		}
 	}
 	return v.(TaskResult)
+}
+
+func (p *Plan) Results() map[Task]TaskResult {
+	results := map[Task]TaskResult{}
+	p.status.Range(func(task, result any) bool {
+		results[task.(Task)] = result.(TaskResult)
+		return true
+	})
+	return results
 }
 
 // task to vertex
