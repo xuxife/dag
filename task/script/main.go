@@ -46,7 +46,7 @@ import "context"
 {{- $t_out := Join .NumOut "t.out" }}
 
 type func{{$in_out}}[{{$type_I_O}} any] struct {
-	BaseTask
+	Base
 	{{- range $i := Iterate .NumIn }}	
 	in{{$i}} I{{$i}}
 	{{- end }}
@@ -57,7 +57,7 @@ type func{{$in_out}}[{{$type_I_O}} any] struct {
 
 func Func{{$in_out}}[{{$type_I_O}} any](name string, f func(context.Context, {{$type_I}}) ({{$type_O}} error)) *func{{$in_out}}[{{$type_I_O}}] {
 	t := &func{{$in_out}}[{{$type_I_O}}]{}
-	t.BaseTask = *Func(name, func(ctx context.Context) error {
+	t.Base = *Func(name, func(ctx context.Context) error {
 		var err error
 		{{$t_out}} err = f(ctx, {{$t_in}})
 		return err

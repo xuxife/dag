@@ -6,34 +6,34 @@ import (
 	"github.com/xuxife/dag"
 )
 
-func VoidTask(name string) *BaseTask {
+func VoidTask(name string) *Base {
 	return Func(name, func(_ context.Context) error { return nil })
 }
 
-func Func(name string, f func(context.Context) error) *BaseTask {
-	return &BaseTask{
+func Func(name string, f func(context.Context) error) *Base {
+	return &Base{
 		BaseVertex: *dag.NewVertex(name),
 		F:          f,
 	}
 }
 
-type BaseTask struct {
+type Base struct {
 	dag.BaseVertex
 	F         func(context.Context) error
 	InputFunc func([]Task) // InputFunc overwrites .Input
 }
 
-func (t *BaseTask) Run(ctx context.Context) error {
+func (t *Base) Run(ctx context.Context) error {
 	return t.F(ctx)
 }
 
-func (t *BaseTask) Input(ts ...Task) {
+func (t *Base) Input(ts ...Task) {
 	if t.InputFunc != nil {
 		t.InputFunc(ts)
 	}
 }
 
-func (t *BaseTask) Output() []any {
+func (t *Base) Output() []any {
 	return nil
 }
 
@@ -46,7 +46,7 @@ func BaseInputFunc(f func(...any)) func([]Task) {
 		case 1:
 			f(ts[0].Output()...)
 		default:
-			panic("default Input func only accept 1 task, use customized input function via setting BaseTask.InputFunc")
+			panic("default Input func only accept 1 task, use customized input function via setting Base.InputFunc")
 		}
 	}
 }

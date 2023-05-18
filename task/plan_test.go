@@ -19,7 +19,7 @@ import (
 //
 // A task should implement interface Task,
 // which includes 3 methods: Run, Input, Output.
-// Always embed the BaseTask to get the default implementation.
+// Always embed the Base to get the default implementation.
 //
 //   - Run(context.Context) error
 //     the main logic of the task
@@ -36,7 +36,7 @@ import (
 
 // taskAdd accepts all int inputs, and output the sum of them.
 type taskAdd struct {
-	task.BaseTask
+	task.Base
 	args []int
 	out  int
 }

@@ -3,14 +3,14 @@ package task
 func Input(name string, vs ...any) *input {
 	i := &input{}
 	i.values = vs
-	i.BaseTask = *VoidTask(name)
+	i.Base = *VoidTask(name)
 	return i
 }
 
 var _ Task = &input{}
 
 type input struct {
-	BaseTask
+	Base
 	values []any
 }
 
