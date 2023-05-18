@@ -26,19 +26,23 @@ func TestPlan(t *testing.T) {
 	t.Run("task.Add tasks independently", func(t *testing.T) {
 		// task.Add tasks don't have any dependency
 		// aka. they will be started at the same time
-		//   /--> a
-		// - |--> b
-		//   \--> c
+		// --> a
+		// --> b
+		// --> c
 		p, err := task.New(
 			task.Add(a, b, c),
 			task.Add(a), // add is idempotent
 		)
 		r.NoError(t, err)
 		// task input can be set by task.Input
-		a.Input(task.Input("input_a", 123))
-		// p.Add(task.Input("input_a", 123)).Then(a) // same
+		p.Add(task.Input("input_a", 123)).Then(a)
 		// TInput is type safe, but limit to task.Func family
+		// and TInput is transparent to Plan, it directs to Task
 		b.TInput("hello")
+		// Then the graph becomes
+		//  input_a --> a
+		//          --> b  // <~~ TInput("hello")
+		//          --> c
 
 		r.NoError(t, p.Start(ctx))
 		// tasks status can be checked
@@ -96,7 +100,7 @@ func TestPlan(t *testing.T) {
 			return 123, "d: hello", nil
 		})
 		// a --\
-		// d --|--> b
+		// d -----> b
 		p, err := task.New(
 			task.Add(a, d).Then(b),
 		)
@@ -125,7 +129,7 @@ func TestPlan(t *testing.T) {
 			return fmt.Sprintf("d: %s", s), nil
 		})
 		//     /--> b
-		// a --|--> d
+		// a -----> d
 		p, err := task.New(
 			task.Add(a).Then(b, d),
 		)
