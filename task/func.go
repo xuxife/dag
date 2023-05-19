@@ -2,8 +2,6 @@ package task
 
 import (
 	"context"
-
-	"github.com/xuxife/dag"
 )
 
 func VoidTask(name string) *Base {
@@ -12,13 +10,13 @@ func VoidTask(name string) *Base {
 
 func Func(name string, f func(context.Context) error) *Base {
 	return &Base{
-		BaseVertex: *dag.NewVertex(name),
-		F:          f,
+		Name: name,
+		F:    f,
 	}
 }
 
 type Base struct {
-	dag.BaseVertex
+	Name      string
 	F         func(context.Context) error
 	InputFunc func([]Task) // InputFunc overwrites .Input
 }

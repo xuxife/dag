@@ -8,10 +8,7 @@ import (
 )
 
 func TestDAG(t *testing.T) {
-	newVertices := func() (dag.Vertex, dag.Vertex, dag.Vertex, dag.Vertex, dag.Vertex) {
-		return dag.NewVertex("a"), dag.NewVertex("b"), dag.NewVertex("c"), dag.NewVertex("d"), dag.NewVertex("e")
-	}
-	a, b, c, d, e := newVertices()
+	var a, b, c, d, e dag.Vertex = "a", "b", "c", "d", "e"
 	//     /-- a
 	//    /--- b
 	// --|---- c
