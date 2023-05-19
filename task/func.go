@@ -15,26 +15,6 @@ func Func(name string, f func(context.Context) error) *Base {
 	}
 }
 
-type Base struct {
-	Name      string
-	F         func(context.Context) error
-	InputFunc func([]Task) // InputFunc overwrites .Input
-}
-
-func (t *Base) Run(ctx context.Context) error {
-	return t.F(ctx)
-}
-
-func (t *Base) Input(ts ...Task) {
-	if t.InputFunc != nil {
-		t.InputFunc(ts)
-	}
-}
-
-func (t *Base) Output() []any {
-	return nil
-}
-
 //go:generate sh -c "go run ./script/main.go -num_in 5 -num_out 5 | gofmt > genfunc.go"
 
 func BaseInputFunc(f func(...any)) func([]Task) {

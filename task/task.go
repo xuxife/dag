@@ -16,6 +16,26 @@ type Task interface {
 	Output() []any
 }
 
+type Base struct {
+	Name      string
+	F         func(context.Context) error
+	InputFunc func([]Task) // InputFunc overwrites .Input
+}
+
+func (t *Base) Run(ctx context.Context) error {
+	return t.F(ctx)
+}
+
+func (t *Base) Input(ts ...Task) {
+	if t.InputFunc != nil {
+		t.InputFunc(ts)
+	}
+}
+
+func (t *Base) Output() []any {
+	return nil
+}
+
 type TaskStatus int
 
 const (
