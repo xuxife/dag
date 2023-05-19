@@ -70,6 +70,7 @@ func (d *DAG) GetEdges() []Edge {
 	return d.edges.ToSlice()
 }
 
+// GetEdgesFrom returns all edges outcoming from the vertex
 func (d *DAG) GetEdgesFrom(v Vertex) []Edge {
 	edges := []Edge{}
 	for _, e := range d.edges.ToSlice() {
@@ -80,6 +81,7 @@ func (d *DAG) GetEdgesFrom(v Vertex) []Edge {
 	return edges
 }
 
+// GetEdgesTo returns all edges incoming to the vertex
 func (d *DAG) GetEdgesTo(v Vertex) []Edge {
 	edges := []Edge{}
 	for _, e := range d.edges.ToSlice() {
@@ -90,6 +92,7 @@ func (d *DAG) GetEdgesTo(v Vertex) []Edge {
 	return edges
 }
 
+// GetVerticesFrom returns all vertices having edges from the vertex
 func (d *DAG) GetVerticesFrom(v Vertex) []Vertex {
 	vs := []Vertex{}
 	for _, e := range d.GetEdgesFrom(v) {
@@ -98,6 +101,7 @@ func (d *DAG) GetVerticesFrom(v Vertex) []Vertex {
 	return vs
 }
 
+// GetVerticesTo returns all vertices having edges to the vertex
 func (d *DAG) GetVerticesTo(v Vertex) []Vertex {
 	vs := []Vertex{}
 	for _, e := range d.GetEdgesTo(v) {

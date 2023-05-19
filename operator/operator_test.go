@@ -12,6 +12,35 @@ import (
 //
 // Let's assume we are going to build a Kubernetes Operator,
 // which watches a CRD `Plan`, and reconcile the jobs defined in Plan in topological order.
+//
+// A Plan may looks like
+//
+// ```yaml
+// apiVersion: example.com/v1alpha1
+// kind: Plan
+// metadata:
+//  name: example-plan
+// spec:
+// 	tasks:
+// 	- name: task1
+// 	  job:
+// 		# ...
+// 	  dependsOn:
+// 	  - task2
+// 	  - task3
+// 	- name: task2
+// 	  job:
+// 		# ...
+// 	  dependsOn:
+// 	  - task3
+// 	- name: task3
+// 	  job:
+// 		# ...
+// ```
+//
+// Then PlanReconciler will build a DAG from the Plan, and start the tasks in topological order.
+// It will start `task3` first, then `task2`, and finally `task1`.
+//
 
 // ## Reconciler
 //
